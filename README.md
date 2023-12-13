@@ -58,6 +58,24 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## install typeorm
+  - $ npm i typeorm --save
+
+## install reflect-metadata
+  - $ npm i reflect-metadata --save
+
+## install postgresql
+  - $ npm i pg --save
+
+## install node typing
+  - $ npm i @types/node --save-dev
+
+## install typeorm types depedencies
+  - $ npm install --save @nestjs/typeorm
+
+## install dotenv
+  - $ npm install dotenv
+
 ## Support
 
 Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
