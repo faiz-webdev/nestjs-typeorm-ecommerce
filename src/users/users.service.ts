@@ -9,6 +9,7 @@ import { IResponseHandlerParams } from 'src/interfaces';
 import { SignupUserDto } from './dto/signup-user.dto';
 import { hash, compare } from 'bcrypt';
 import { SignInUserDto } from './dto/signin-user.dto';
+import { sign } from 'jsonwebtoken';
 
 @Injectable()
 export class UsersService {
@@ -66,10 +67,12 @@ export class UsersService {
             message: 'User not found',
           });
         }
+        const token = await this.accessToken(user);
         return ResponseHandlerService({
           success: false,
           httpCode: HttpStatus.OK,
           message: 'User logged in successfully',
+          data: { token },
         });
       }
 
@@ -111,5 +114,14 @@ export class UsersService {
   async finduserByEmail(email: string) {
     const user = await this.userRepo.findOneBy({ email });
     return user;
+  }
+
+  async accessToken(user: UserEntity): Promise<string> {
+    const token = sign(
+      { id: user.id, email: user.email },
+      process.env.ACCESS_TOKEN_SECRET_KEY,
+      { expiresIn: process.env.ACCESS_TOKEN_EXPIRE },
+    );
+    return token;
   }
 }
