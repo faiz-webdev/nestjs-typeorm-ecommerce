@@ -6,6 +6,7 @@ import { UserEntity } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { ResponseHandlerService } from 'src/services';
 import { IResponseHandlerParams } from 'src/interfaces';
+import { SignupUserDto } from './dto/signup-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -14,9 +15,9 @@ export class UsersService {
     private readonly userRepo: Repository<UserEntity>,
   ) {}
 
-  async signup(createUserDto: CreateUserDto): Promise<IResponseHandlerParams> {
+  async signup(signupUserDto: SignupUserDto): Promise<IResponseHandlerParams> {
     try {
-      let user = this.userRepo.create(createUserDto);
+      let user = this.userRepo.create(signupUserDto);
       user = await this.userRepo.save(user);
       return ResponseHandlerService({
         success: true,

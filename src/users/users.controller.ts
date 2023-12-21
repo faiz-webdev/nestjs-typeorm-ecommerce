@@ -11,6 +11,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { IResponseHandlerParams } from 'src/interfaces';
+import { SignupUserDto } from './dto/signup-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -18,9 +19,9 @@ export class UsersController {
 
   @Post('signup')
   public async signup(
-    @Body() createUserDto: CreateUserDto,
+    @Body() signupUserDto: SignupUserDto,
   ): Promise<IResponseHandlerParams> {
-    return this.usersService.signup(createUserDto);
+    return this.usersService.signup(signupUserDto);
   }
 
   @Post()
