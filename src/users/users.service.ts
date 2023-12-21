@@ -17,7 +17,16 @@ export class UsersService {
 
   async signup(signupUserDto: SignupUserDto): Promise<IResponseHandlerParams> {
     try {
-      let user = this.userRepo.create(signupUserDto);
+      let user = await this.finduserByEmail(signupUserDto.email);
+      if (user) {
+        return ResponseHandlerService({
+          success: false,
+          httpCode: HttpStatus.OK,
+          message: 'User already exists',
+          data: user,
+        });
+      }
+      user = this.userRepo.create(signupUserDto);
       user = await this.userRepo.save(user);
       return ResponseHandlerService({
         success: true,
@@ -53,5 +62,10 @@ export class UsersService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async finduserByEmail(email: string) {
+    const user = await this.userRepo.findOneBy({ email });
+    return user;
   }
 }
