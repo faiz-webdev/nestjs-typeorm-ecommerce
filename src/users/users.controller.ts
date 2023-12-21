@@ -1,11 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { IResponseHandlerParams } from 'src/interfaces';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Post('signup')
+  public async signup(
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<IResponseHandlerParams> {
+    return this.usersService.signup(createUserDto);
+  }
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
