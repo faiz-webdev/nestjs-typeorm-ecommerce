@@ -12,6 +12,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { IResponseHandlerParams } from 'src/interfaces';
 import { SignupUserDto } from './dto/signup-user.dto';
+import { SignInUserDto } from './dto/signin-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -22,6 +23,13 @@ export class UsersController {
     @Body() signupUserDto: SignupUserDto,
   ): Promise<IResponseHandlerParams> {
     return this.usersService.signup(signupUserDto);
+  }
+
+  @Post('signin')
+  public async signin(
+    @Body() signinUserDto: SignInUserDto,
+  ): Promise<IResponseHandlerParams> {
+    return this.usersService.signin(signinUserDto);
   }
 
   @Post()

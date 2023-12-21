@@ -7,7 +7,8 @@ import { Repository } from 'typeorm';
 import { ResponseHandlerService } from 'src/services';
 import { IResponseHandlerParams } from 'src/interfaces';
 import { SignupUserDto } from './dto/signup-user.dto';
-import { hash } from 'bcrypt';
+import { hash, compare } from 'bcrypt';
+import { SignInUserDto } from './dto/signin-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -35,6 +36,47 @@ export class UsersService {
         httpCode: HttpStatus.OK,
         message: 'Signup successful',
         data: user,
+      });
+    } catch (error) {
+      return ResponseHandlerService({
+        success: false,
+        httpCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: `Unable to process your data. Please try again later`,
+        errorDetails: error.toString(),
+      });
+    }
+  }
+
+  async signin(signinUserDto: SignInUserDto): Promise<IResponseHandlerParams> {
+    try {
+      let user = await this.userRepo
+        .createQueryBuilder('users')
+        .addSelect('users.password')
+        .where('users.email=:email', { email: signinUserDto.email })
+        .getOne();
+      if (user) {
+        const matchedPassword = await compare(
+          signinUserDto.password,
+          user.password,
+        );
+        if (!matchedPassword) {
+          return ResponseHandlerService({
+            success: false,
+            httpCode: HttpStatus.OK,
+            message: 'User not found',
+          });
+        }
+        return ResponseHandlerService({
+          success: false,
+          httpCode: HttpStatus.OK,
+          message: 'User logged in successfully',
+        });
+      }
+
+      return ResponseHandlerService({
+        success: false,
+        httpCode: HttpStatus.OK,
+        message: 'User not found',
       });
     } catch (error) {
       return ResponseHandlerService({
