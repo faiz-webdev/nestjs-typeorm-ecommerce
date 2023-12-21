@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { ResponseHandlerService } from 'src/services';
 import { IResponseHandlerParams } from 'src/interfaces';
 import { SignupUserDto } from './dto/signup-user.dto';
+import { hash } from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -23,15 +24,16 @@ export class UsersService {
           success: false,
           httpCode: HttpStatus.OK,
           message: 'User already exists',
-          data: user,
         });
       }
+      signupUserDto.password = await hash(signupUserDto.password, 10);
       user = this.userRepo.create(signupUserDto);
       user = await this.userRepo.save(user);
+      delete user.password;
       return ResponseHandlerService({
         success: true,
         httpCode: HttpStatus.OK,
-        message: 'Event show preview has been updated',
+        message: 'Signup successful',
         data: user,
       });
     } catch (error) {

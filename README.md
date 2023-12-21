@@ -82,6 +82,9 @@ $ npm run test:cov
 ## jsonwebtoken
   - $ npm i jsonwebtoken @types/jsonwebtoken
 
+## password hashing
+  - $ npm i bcrypt
+
 # migration commands
 ## generate migration
   - $ npm run migration:generate -- db/migrations/updateUserTable
