@@ -85,6 +85,9 @@ $ npm run test:cov
 ## password hashing
   - $ npm i bcrypt
 
+## Lodash
+  - $ npm i @types/lodash
+
 # migration commands
 ## generate migration
   - $ npm run migration:generate -- db/migrations/updateUserTable

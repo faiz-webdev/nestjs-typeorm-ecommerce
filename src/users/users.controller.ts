@@ -38,12 +38,14 @@ export class UsersController {
   }
 
   @Get()
-  findAll() {
+  public async findAll(): Promise<IResponseHandlerParams> {
     return this.usersService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  public async findOne(
+    @Param('id') id: string,
+  ): Promise<IResponseHandlerParams> {
     return this.usersService.findOne(+id);
   }
 

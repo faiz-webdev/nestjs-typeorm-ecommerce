@@ -10,6 +10,7 @@ import { SignupUserDto } from './dto/signup-user.dto';
 import { hash, compare } from 'bcrypt';
 import { SignInUserDto } from './dto/signin-user.dto';
 import { sign } from 'jsonwebtoken';
+import { isEmpty } from 'lodash';
 
 @Injectable()
 export class UsersService {
@@ -95,12 +96,44 @@ export class UsersService {
     return 'This action adds a new user';
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(): Promise<IResponseHandlerParams> {
+    try {
+      const user = await this.userRepo.find();
+
+      return ResponseHandlerService({
+        success: true,
+        httpCode: HttpStatus.OK,
+        message: 'User record',
+        data: user,
+      });
+    } catch (error) {
+      return ResponseHandlerService({
+        success: false,
+        httpCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: `Unable to process your data. Please try again later`,
+        errorDetails: error.toString(),
+      });
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: number): Promise<IResponseHandlerParams> {
+    try {
+      const user = await this.userRepo.findOneBy({ id });
+
+      return ResponseHandlerService({
+        success: !isEmpty(user) ? true : false,
+        httpCode: HttpStatus.OK,
+        message: 'User record',
+        data: user,
+      });
+    } catch (error) {
+      return ResponseHandlerService({
+        success: false,
+        httpCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: `Unable to process your data. Please try again later`,
+        errorDetails: error.toString(),
+      });
+    }
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
