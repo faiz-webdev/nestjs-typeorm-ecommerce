@@ -13,6 +13,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { IResponseHandlerParams } from 'src/interfaces';
 import { SignupUserDto } from './dto/signup-user.dto';
 import { SignInUserDto } from './dto/signin-user.dto';
+import { CurrentUser } from 'src/utility/decorators/current-user.decorator';
+import { UserEntity } from './entities/user.entity';
 
 @Controller('users')
 export class UsersController {
@@ -35,6 +37,11 @@ export class UsersController {
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
+  }
+
+  @Get('me')
+  getProfile(@CurrentUser() currentUser: UserEntity) {
+    return currentUser;
   }
 
   @Get()
