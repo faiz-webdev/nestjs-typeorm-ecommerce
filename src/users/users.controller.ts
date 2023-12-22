@@ -50,8 +50,8 @@ export class UsersController {
     return currentUser;
   }
 
-  @AuthorizeRoles(Roles.ADMIN)
-  @UseGuards(AuthenticationGuard, AuthorizeGuard)
+  // @AuthorizeRoles(Roles.ADMIN)
+  @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
   @Get()
   public async findAll(): Promise<IResponseHandlerParams> {
     return this.usersService.findAll();

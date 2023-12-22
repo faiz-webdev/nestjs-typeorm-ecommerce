@@ -49,6 +49,15 @@ export class HttpExceptionFilter extends HttpException {
           errorDetails: exception.getResponse(),
         }),
       );
+    } else {
+      response.status(200).json(
+        ResponseHandlerService({
+          success: false,
+          httpCode: exception.getStatus(),
+          message: 'classValidatorMessage',
+          errorDetails: exception.getResponse(),
+        }),
+      );
     }
   }
 }
