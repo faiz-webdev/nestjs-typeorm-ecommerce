@@ -10,10 +10,10 @@ import { CurrentUserMiddleware } from './utility/middleware/current-user.middlew
   imports: [TypeOrmModule.forRoot(dataSourceOptions), UsersModule],
   controllers: [],
   providers: [
-    {
-      provide: APP_FILTER,
-      useClass: HttpExceptionFilter,
-    },
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: HttpExceptionFilter,
+    // },
   ],
 })
 export class AppModule {
