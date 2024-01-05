@@ -57,19 +57,134 @@ export class ProductsService {
     }
   }
 
-  findAll() {
-    return `This action returns all products`;
+  async findAll(): Promise<IResponseHandlerParams> {
+    try {
+      const products = await this.productRepo.find({
+        relations: { addedBy: true, category: true },
+        select: {
+          addedBy: { id: true, name: true, email: true },
+          category: { id: true, title: true, description: true },
+        },
+      });
+      return ResponseHandlerService({
+        success: true,
+        httpCode: HttpStatus.OK,
+        message: 'Product found',
+        data: products,
+      });
+    } catch (error) {
+      return ResponseHandlerService({
+        success: false,
+        httpCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: `Unable to process your data. Please try again later`,
+        errorDetails: error.toString(),
+      });
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(id: number): Promise<IResponseHandlerParams> {
+    try {
+      const products = await this.productRepo.findOne({
+        where: { id },
+        relations: { addedBy: true, category: true },
+        select: {
+          addedBy: { id: true, name: true, email: true },
+          category: { id: true, title: true, description: true },
+        },
+      });
+      return ResponseHandlerService({
+        success: true,
+        httpCode: HttpStatus.OK,
+        message: 'Product found',
+        data: products,
+      });
+    } catch (error) {
+      return ResponseHandlerService({
+        success: false,
+        httpCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: `Unable to process your data. Please try again later`,
+        errorDetails: error.toString(),
+      });
+    }
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(
+    id: number,
+    updateProductDto: Partial<UpdateProductDto>,
+    currentUser: UserEntity,
+  ): Promise<IResponseHandlerParams> {
+    try {
+      let product = await this.productRepo.findOne({
+        where: { id },
+      });
+      if (!isEmpty(product)) {
+        Object.assign(product, updateProductDto);
+        product.addedBy = currentUser;
+
+        if (updateProductDto.categoryId) {
+          const category = await this.categoriesService.findOne(
+            +updateProductDto.categoryId,
+          );
+          if (!isEmpty(category)) {
+            product.category = category.data?.id;
+          } else {
+            return ResponseHandlerService({
+              success: false,
+              httpCode: HttpStatus.OK,
+              message: 'Category not found',
+              data: {},
+            });
+          }
+        }
+
+        product = await this.productRepo.save(product);
+
+        return ResponseHandlerService({
+          success: true,
+          httpCode: HttpStatus.OK,
+          message: 'Product updated successfully',
+          data: product,
+        });
+      }
+      return ResponseHandlerService({
+        success: false,
+        httpCode: HttpStatus.OK,
+        message: 'Product not found',
+        data: {},
+      });
+    } catch (error) {
+      return ResponseHandlerService({
+        success: false,
+        httpCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: `Unable to process your data. Please try again later`,
+        errorDetails: error.toString(),
+      });
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: number): Promise<IResponseHandlerParams> {
+    try {
+      const category = await this.productRepo.findOneBy({ id });
+      if (isEmpty(category)) {
+        return ResponseHandlerService({
+          success: true,
+          httpCode: HttpStatus.OK,
+          message: 'Product not found',
+        });
+      }
+      this.productRepo.delete(id);
+      return ResponseHandlerService({
+        success: true,
+        httpCode: HttpStatus.OK,
+        message: 'Product deleted successfully',
+      });
+    } catch (error) {
+      return ResponseHandlerService({
+        success: false,
+        httpCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: `Unable to process your data. Please try again later`,
+        errorDetails: error.toString(),
+      });
+    }
   }
 }
