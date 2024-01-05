@@ -14,7 +14,7 @@ export class ProductsService {
         success: true,
         httpCode: HttpStatus.OK,
         message: 'Category added successfully',
-        data: {},
+        data: createProductDto,
       });
     } catch (error) {
       return ResponseHandlerService({

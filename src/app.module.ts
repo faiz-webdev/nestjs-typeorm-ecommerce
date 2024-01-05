@@ -7,6 +7,7 @@ import { HttpExceptionFilter } from './http-exception.filter';
 import { CurrentUserMiddleware } from './utility/middleware/current-user.middleware';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
+import { ValidationFilter } from './utility/exceptions/validation.filter';
 
 @Module({
   imports: [
@@ -16,12 +17,17 @@ import { ProductsModule } from './products/products.module';
     ProductsModule,
   ],
   controllers: [],
-  // providers: [
+  providers: [
     // {
     //   provide: APP_FILTER,
     //   useClass: HttpExceptionFilter,
     // },
-  // ],
+
+    {
+      provide: APP_FILTER,
+      useClass: ValidationFilter,
+    },
+  ],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
