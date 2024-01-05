@@ -8,6 +8,7 @@ import { CurrentUserMiddleware } from './utility/middleware/current-user.middlew
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { ValidationFilter } from './utility/exceptions/validation.filter';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ValidationFilter } from './utility/exceptions/validation.filter';
     UsersModule,
     CategoriesModule,
     ProductsModule,
+    ReviewsModule,
   ],
   controllers: [],
   providers: [
