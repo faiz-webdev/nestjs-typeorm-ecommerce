@@ -6,12 +6,14 @@ import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './http-exception.filter';
 import { CurrentUserMiddleware } from './utility/middleware/current-user.middleware';
 import { CategoriesModule } from './categories/categories.module';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(dataSourceOptions),
     UsersModule,
     CategoriesModule,
+    ProductsModule,
   ],
   controllers: [],
   // providers: [
