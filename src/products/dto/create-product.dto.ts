@@ -35,5 +35,5 @@ export class CreateProductDto {
 
   @IsNotEmpty({ message: 'Category should not be empty' })
   @IsNumber({}, { message: 'Category id should be a number' })
-  readonly category: number;
+  categoryId: number;
 }
