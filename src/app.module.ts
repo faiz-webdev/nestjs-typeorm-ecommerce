@@ -14,12 +14,12 @@ import { CategoriesModule } from './categories/categories.module';
     CategoriesModule,
   ],
   controllers: [],
-  providers: [
+  // providers: [
     // {
     //   provide: APP_FILTER,
     //   useClass: HttpExceptionFilter,
     // },
-  ],
+  // ],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

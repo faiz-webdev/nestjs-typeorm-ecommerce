@@ -32,25 +32,25 @@ export class CategoriesController {
   }
 
   @Get()
-  findAll() {
+  async findAll(): Promise<IResponseHandlerParams> {
     return this.categoriesService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<IResponseHandlerParams> {
     return this.categoriesService.findOne(+id);
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
-  ) {
+  ): Promise<IResponseHandlerParams> {
     return this.categoriesService.update(+id, updateCategoryDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string): Promise<IResponseHandlerParams> {
     return this.categoriesService.remove(+id);
   }
 }
