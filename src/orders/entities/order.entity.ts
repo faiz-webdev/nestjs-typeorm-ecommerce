@@ -46,5 +46,8 @@ export class OrderEntity {
   shippingAddress: ShippingEntity;
 
   @OneToMany(() => OrdersProductsEntity, (op) => op.order, { cascade: true })
-  products: OrdersProductsEntity;
+  products: OrdersProductsEntity[];
+
+  @ManyToOne(() => UserEntity, (user) => user.orders)
+  user: UserEntity;
 }
