@@ -238,6 +238,56 @@ export class OrdersService {
     }
   }
 
+  async cancelledOrder(
+    id: number,
+    currentUser: UserEntity,
+  ): Promise<IResponseHandlerParams> {
+    try {
+      let order = await this.orderRepository.findOne({
+        where: { id: id },
+        relations: {
+          products: { product: true },
+        },
+      });
+
+      if (isEmpty(order)) {
+        return ResponseHandlerService({
+          success: false,
+          httpCode: HttpStatus.NOT_FOUND,
+          message: 'Product found',
+          data: {},
+        });
+      }
+      if (order.status === OrderStatus.CANCELLED) {
+        return ResponseHandlerService({
+          success: true,
+          httpCode: HttpStatus.OK,
+          message: 'Your order already canceled',
+          data: order,
+        });
+      }
+
+      order.status = OrderStatus.CANCELLED;
+      order.updatedBy = currentUser['data'];
+      order = await this.orderRepository.save(order);
+      await this.stockUpdate(order, OrderStatus.CANCELLED);
+
+      return ResponseHandlerService({
+        success: true,
+        httpCode: HttpStatus.OK,
+        message: 'Your order has been canceled',
+        data: order,
+      });
+    } catch (error) {
+      return ResponseHandlerService({
+        success: false,
+        httpCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: `Unable to process your data. Please try again later`,
+        errorDetails: error.toString(),
+      });
+    }
+  }
+
   remove(id: number) {
     return `This action removes a #${id} order`;
   }

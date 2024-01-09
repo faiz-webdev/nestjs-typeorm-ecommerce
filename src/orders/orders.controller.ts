@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Put,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -56,6 +57,15 @@ export class OrdersController {
       updateOrderStatusDto,
       currentUser,
     );
+  }
+
+  @UseGuards(AuthenticationGuard, AuthorizeGuard([Roles.ADMIN]))
+  @Put('cancel/:id')
+  async cancelledOrder(
+    @Param('id') id: string,
+    @CurrentUser() currentUser: UserEntity,
+  ): Promise<IResponseHandlerParams> {
+    return await this.ordersService.cancelledOrder(+id, currentUser);
   }
 
   @Delete(':id')
