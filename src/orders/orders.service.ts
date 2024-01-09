@@ -11,12 +11,15 @@ import { OrdersProductsEntity } from './entities/orders-products.entity';
 import { ShippingEntity } from './entities/shipping.entity';
 import { ProductEntity } from 'src/products/entities/product.entity';
 import { ProductsService } from 'src/products/products.service';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { isEmpty } from 'lodash';
+import { OrderStatus } from './enums/order-status.enum';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(OrderEntity)
-    private readonly orderedRepository: Repository<OrderEntity>,
+    private readonly orderRepository: Repository<OrderEntity>,
     @InjectRepository(OrdersProductsEntity)
     private readonly opRepository: Repository<OrdersProductsEntity>,
     private readonly productService: ProductsService,
@@ -34,7 +37,7 @@ export class OrdersService {
       orderEntity.shippingAddress = shippingEntity;
       orderEntity.user = currentUser['data']?.id;
 
-      const orderTbl = await this.orderedRepository.save(orderEntity);
+      const orderTbl = await this.orderRepository.save(orderEntity);
 
       const opEntity: {
         order: OrderEntity;
@@ -93,13 +96,34 @@ export class OrdersService {
     }
   }
 
-  findAll() {
-    return `This action returns all orders`;
+  async findAll() {
+    try {
+      const res = await this.orderRepository.find({
+        relations: {
+          shippingAddress: true,
+          user: true,
+          products: { product: true },
+        },
+      });
+      return ResponseHandlerService({
+        success: true,
+        httpCode: HttpStatus.OK,
+        message: 'Order records found',
+        data: res,
+      });
+    } catch (error) {
+      return ResponseHandlerService({
+        success: false,
+        httpCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: `Unable to process your data. Please try again later`,
+        errorDetails: error.toString(),
+      });
+    }
   }
 
   async findOne(id: number): Promise<IResponseHandlerParams> {
     try {
-      const res = await this.orderedRepository.findOne({
+      const res = await this.orderRepository.findOne({
         where: { id: id },
         relations: {
           shippingAddress: true,
@@ -124,11 +148,107 @@ export class OrdersService {
     }
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
+  async update(
+    id: number,
+    updateOrderStatusDto: UpdateOrderStatusDto,
+    currentUser: UserEntity,
+  ): Promise<IResponseHandlerParams> {
+    try {
+      let order = await this.orderRepository.findOne({
+        where: { id: id },
+        relations: {
+          products: { product: true },
+        },
+      });
+
+      if (isEmpty(order)) {
+        return ResponseHandlerService({
+          success: false,
+          httpCode: HttpStatus.NOT_FOUND,
+          message: 'Order not found',
+          data: {},
+        });
+      }
+
+      if (
+        order.status === OrderStatus.DELIVERED ||
+        order.status === OrderStatus.CANCELLED
+      ) {
+        return ResponseHandlerService({
+          success: false,
+          httpCode: HttpStatus.NOT_FOUND,
+          message: `Order already ${order.status}`,
+          data: {},
+        });
+      }
+
+      if (
+        order.status === OrderStatus.PROCESSING &&
+        updateOrderStatusDto.status != OrderStatus.SHIPPED
+      ) {
+        return ResponseHandlerService({
+          success: false,
+          httpCode: HttpStatus.NOT_FOUND,
+          message: `Delivery before shipped`,
+          data: {},
+        });
+      }
+
+      if (
+        updateOrderStatusDto.status === OrderStatus.PROCESSING &&
+        order.status === OrderStatus.SHIPPED
+      ) {
+        return ResponseHandlerService({
+          success: false,
+          httpCode: HttpStatus.NOT_FOUND,
+          message: `Order data`,
+          data: order,
+        });
+      }
+
+      if (updateOrderStatusDto.status === OrderStatus.SHIPPED) {
+        order.shippedAt = new Date();
+      }
+
+      if (updateOrderStatusDto.status === OrderStatus.DELIVERED) {
+        order.deliveredAt = new Date();
+      }
+
+      order.status = updateOrderStatusDto.status;
+      order.updatedBy = currentUser['data'];
+      order = await this.orderRepository.save(order);
+
+      if (updateOrderStatusDto.status === OrderStatus.DELIVERED) {
+        await this.stockUpdate(order, OrderStatus.DELIVERED);
+      }
+
+      return ResponseHandlerService({
+        success: true,
+        httpCode: HttpStatus.OK,
+        message: 'Product found',
+        data: order,
+      });
+    } catch (error) {
+      return ResponseHandlerService({
+        success: false,
+        httpCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: `Unable to process your data. Please try again later`,
+        errorDetails: error.toString(),
+      });
+    }
   }
 
   remove(id: number) {
     return `This action removes a #${id} order`;
+  }
+
+  async stockUpdate(order: OrderEntity, status: string) {
+    for (const op of order.products) {
+      await this.productService.updateStock(
+        op.product.id,
+        op.product_quantity,
+        status,
+      );
+    }
   }
 }

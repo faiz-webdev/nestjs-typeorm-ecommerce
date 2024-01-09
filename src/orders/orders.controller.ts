@@ -15,6 +15,9 @@ import { AuthenticationGuard } from 'src/utility/guards/authentication.guard';
 import { CurrentUser } from 'src/utility/decorators/current-user.decorator';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { IResponseHandlerParams } from 'src/interfaces';
+import { AuthorizeGuard } from 'src/utility/guards/authorizaation.guard';
+import { Roles } from 'src/utility/common/user-roles.enum';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -29,19 +32,30 @@ export class OrdersController {
     return await this.ordersService.create(createOrderDto, currentUser);
   }
 
+  @UseGuards(AuthenticationGuard)
   @Get()
-  findAll() {
-    return this.ordersService.findAll();
+  async findAll(): Promise<IResponseHandlerParams> {
+    return await this.ordersService.findAll();
   }
 
+  @UseGuards(AuthenticationGuard)
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<IResponseHandlerParams> {
     return await this.ordersService.findOne(+id);
   }
 
+  @UseGuards(AuthenticationGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.ordersService.update(+id, updateOrderDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateOrderStatusDto: UpdateOrderStatusDto,
+    @CurrentUser() currentUser: UserEntity,
+  ): Promise<IResponseHandlerParams> {
+    return await this.ordersService.update(
+      +id,
+      updateOrderStatusDto,
+      currentUser,
+    );
   }
 
   @Delete(':id')

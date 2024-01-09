@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { CategoriesService } from 'src/categories/categories.service';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { isEmpty } from 'lodash';
+import { OrderStatus } from 'src/orders/enums/order-status.enum';
 
 @Injectable()
 export class ProductsService {
@@ -186,5 +187,19 @@ export class ProductsService {
         errorDetails: error.toString(),
       });
     }
+  }
+
+  async updateStock(id: number, stock: number, status: string) {
+    let product = await this.productRepo.findOne({ where: { id } });
+
+    if (status === OrderStatus.DELIVERED) {
+      product.stock -= stock;
+    } else {
+      product.stock += stock;
+    }
+
+    product = await this.productRepo.save(product);
+
+    return product;
   }
 }
