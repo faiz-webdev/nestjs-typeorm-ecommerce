@@ -11,6 +11,7 @@ import { UserEntity } from 'src/users/entities/user.entity';
 import { isEmpty } from 'lodash';
 import { OrderStatus } from 'src/orders/enums/order-status.enum';
 import dataSource from 'db/data-source';
+import { ProductsDto } from './dto/products.dto';
 
 @Injectable()
 export class ProductsService {
@@ -59,7 +60,9 @@ export class ProductsService {
     }
   }
 
-  async findAll(query: any): Promise<IResponseHandlerParams> {
+  async findAll(
+    query: any,
+  ): Promise<{ products: any[]; totalProducts; limit }> {
     try {
       let filteredTotalProductd: number;
       let limit: number;
@@ -129,6 +132,9 @@ export class ProductsService {
       }
 
       queryBuilder.limit(limit);
+      if (query.offset) {
+        queryBuilder.offset(query.offset);
+      }
       products = await queryBuilder.getRawMany();
 
       // products = await this.productRepo.find({
@@ -140,19 +146,21 @@ export class ProductsService {
       //   },
       // });
 
-      return ResponseHandlerService({
-        success: true,
-        httpCode: HttpStatus.OK,
-        message: 'Product found',
-        data: products,
-      });
+      // return ResponseHandlerService({
+      //   success: true,
+      //   httpCode: HttpStatus.OK,
+      //   message: 'Product found',
+      //   data: products,
+      // });
+      return { products, totalProducts, limit };
     } catch (error) {
-      return ResponseHandlerService({
-        success: false,
-        httpCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: `Unable to process your data. Please try again later`,
-        errorDetails: error.toString(),
-      });
+      // return ResponseHandlerService({
+      //   success: false,
+      //   httpCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      //   message: `Unable to process your data. Please try again later`,
+      //   errorDetails: error.toString(),
+      // });
+      console.log(error.toString());
     }
   }
 
