@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -32,8 +33,8 @@ export class ProductsController {
   }
 
   @Get()
-  async findAll(): Promise<IResponseHandlerParams> {
-    return this.productsService.findAll();
+  async findAll(@Query() query: any): Promise<IResponseHandlerParams> {
+    return await this.productsService.findAll(query);
   }
 
   @Get(':id')

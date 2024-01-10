@@ -10,6 +10,7 @@ import { CategoriesService } from 'src/categories/categories.service';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { isEmpty } from 'lodash';
 import { OrderStatus } from 'src/orders/enums/order-status.enum';
+import dataSource from 'db/data-source';
 
 @Injectable()
 export class ProductsService {
@@ -58,15 +59,59 @@ export class ProductsService {
     }
   }
 
-  async findAll(): Promise<IResponseHandlerParams> {
+  async findAll(query: any): Promise<IResponseHandlerParams> {
     try {
-      const products = await this.productRepo.find({
-        relations: { addedBy: true, category: true },
-        select: {
-          addedBy: { id: true, name: true, email: true },
-          category: { id: true, title: true, description: true },
-        },
-      });
+      let filteredTotalProductd: number;
+      let limit: number;
+
+      if (!query.limit) {
+        limit = 4;
+      } else {
+        limit = query.limit;
+      }
+
+      // const queryBuilder = await dataSource
+      //   .getRepository(ProductEntity)
+      //   .createQueryBuilder('product')
+      //   .leftJoinAndSelect('product.category', 'category')
+      //   .leftJoin('product.reviews', 'review')
+      //   .addSelect([
+      //     'COUNT(review.id) AS reviewCount',
+      //     'AVG(review.ratings)::numeric(10,2) AS avgRating',
+      //   ])
+      //   .groupBy('product.id,category.id');
+
+      const queryBuilder = dataSource
+        .getRepository(ProductEntity)
+        .createQueryBuilder('product')
+        .leftJoinAndSelect('product.category', 'category')
+        .leftJoin('product.reviews', 'review')
+        .addSelect([
+          'COUNT(review.id) AS reviewCount',
+          'CAST(AVG(review.ratings) AS DECIMAL(10,2)) AS avgRating',
+        ])
+        .groupBy('product.id,category.id');
+
+      const totalProducts = await queryBuilder.getCount();
+      let products;
+
+      if (query.search) {
+        const search = query.search;
+        queryBuilder.andWhere('product.title like :title', {
+          title: `%${search}%`,
+        });
+        products = await queryBuilder.getRawMany();
+      } else {
+        products = await this.productRepo.find({
+          relations: { addedBy: true, category: true, reviews: true },
+          select: {
+            addedBy: { id: true, name: true, email: true },
+            category: { id: true, title: true, description: true },
+            reviews: { id: true, comment: true, ratings: true },
+          },
+        });
+      }
+
       return ResponseHandlerService({
         success: true,
         httpCode: HttpStatus.OK,
