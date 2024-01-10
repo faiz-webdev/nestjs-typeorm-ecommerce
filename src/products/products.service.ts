@@ -100,17 +100,45 @@ export class ProductsService {
         queryBuilder.andWhere('product.title like :title', {
           title: `%${search}%`,
         });
-        products = await queryBuilder.getRawMany();
-      } else {
-        products = await this.productRepo.find({
-          relations: { addedBy: true, category: true, reviews: true },
-          select: {
-            addedBy: { id: true, name: true, email: true },
-            category: { id: true, title: true, description: true },
-            reviews: { id: true, comment: true, ratings: true },
-          },
+      }
+      if (query.category) {
+        queryBuilder.andWhere('category.id=:id', { id: query.category });
+      }
+
+      if (query.minPrice) {
+        queryBuilder.andWhere('product.price>=:minPrice', {
+          minPrice: query.minPrice,
         });
       }
+      if (query.maxPrice) {
+        queryBuilder.andWhere('product.price<=:maxPrice', {
+          maxPrice: query.maxPrice,
+        });
+      }
+
+      if (query.minRating) {
+        queryBuilder.andHaving('AVG(review.ratings)>=:minRating', {
+          minRating: query.minRating,
+        });
+      }
+
+      if (query.maxRating) {
+        queryBuilder.andHaving('AVG(review.ratings)<=:maxRating', {
+          maxRating: query.maxRating,
+        });
+      }
+
+      queryBuilder.limit(limit);
+      products = await queryBuilder.getRawMany();
+
+      // products = await this.productRepo.find({
+      //   relations: { addedBy: true, category: true, reviews: true },
+      //   select: {
+      //     addedBy: { id: true, name: true, email: true },
+      //     category: { id: true, title: true, description: true },
+      //     reviews: { id: true, comment: true, ratings: true },
+      //   },
+      // });
 
       return ResponseHandlerService({
         success: true,
