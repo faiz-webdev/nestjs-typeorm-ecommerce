@@ -1,4 +1,10 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpStatus,
+  Injectable,
+  BadRequestException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { IResponseHandlerParams } from 'src/interfaces';
@@ -12,6 +18,7 @@ import { isEmpty } from 'lodash';
 import { OrderStatus } from 'src/orders/enums/order-status.enum';
 import dataSource from 'db/data-source';
 import { ProductsDto } from './dto/products.dto';
+import { OrdersService } from 'src/orders/orders.service';
 
 @Injectable()
 export class ProductsService {
@@ -19,6 +26,8 @@ export class ProductsService {
     @InjectRepository(ProductEntity)
     private readonly productRepo: Repository<ProductEntity>,
     private readonly categoriesService: CategoriesService,
+    @Inject(forwardRef(() => OrdersService))
+    private readonly orderService: OrdersService,
   ) {}
   async create(
     createProductDto: CreateProductDto,
@@ -254,7 +263,15 @@ export class ProductsService {
           message: 'Product not found',
         });
       }
-      this.productRepo.delete(id);
+      const order = await this.orderService.findOneByProductId(id);
+      if (!isEmpty(order)) {
+        return ResponseHandlerService({
+          success: false,
+          httpCode: HttpStatus.BAD_REQUEST,
+          message: 'Product is in used',
+        });
+      }
+      const deleted = await this.productRepo.delete(id);
       return ResponseHandlerService({
         success: true,
         httpCode: HttpStatus.OK,

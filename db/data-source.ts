@@ -29,5 +29,8 @@ export const dataSourceOptions: DataSourceOptions = {
 };
 
 const dataSource = new DataSource(dataSourceOptions);
-dataSource.initialize();
+dataSource
+  .initialize()
+  .then((res) => {})
+  .catch((err) => console.log('err: ', err));
 export default dataSource;
